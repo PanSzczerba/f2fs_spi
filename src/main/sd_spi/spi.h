@@ -15,7 +15,6 @@
 #define MOSI 4
 #define MISO 6
 
-extern int spi_initialized; // to know if pins were initialized - don't change manually
 int setup_spi();
 int spi_read_write(unsigned char* buff, size_t buff_size);
 

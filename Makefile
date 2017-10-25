@@ -1,27 +1,26 @@
 CC=gcc
 CFLAGS= -Wall -std=gnu99
-INCLUDE= -I./main/src/sd_spi \
-		 -I./main/src/sd_rw
 LIBRARY= -lwiringPi
 ifdef DEBUG
 CFLAGS+= -g
 endif
 
 #Dirs
-SPI_DIR=./main/src/sd_spi
-RW_DIR=./main/src/sd_rw
+SPI_DIR=./src/main/sd_spi
+RW_DIR=./src/main/sd_rw
+TEST_DIR=./src/test
+
+INCLUDE= -I$(SPI_DIR) \
+		 -I$(RW_DIR)
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) -o $@ $(INCLUDE) $< 
 
-all: $(RW_DIR)/main \
+all: $(TEST_DIR)/main \
 	$(SPI_DIR)/libspi.so
 
-$(RW_DIR)/main: $(RW_DIR)/main.o $(RW_DIR)/rw_block.o $(SPI_DIR)/spi.o
+$(TEST_DIR)/main: $(TEST_DIR)/main.o $(RW_DIR)/rw_block.o $(SPI_DIR)/spi.o
 	$(CC) -o $@ $^ $(LIBRARY)
-
-$(RW_DIR)/rw_block.o: $(RW_DIR)/rw_block.c
-	$(CC) -c $(CFLAGS) $(INCLUDE) -o $@ $^ 
 
 $(SPI_DIR)/libspi.so: $(SPI_DIR)/spi.o
 	$(CC) -shared -o $@ $<

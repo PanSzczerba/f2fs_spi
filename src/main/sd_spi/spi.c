@@ -1,9 +1,13 @@
 #include "spi.h"
+#include <stdlib.h>
 
-int spi_initialized = 0;
+static int spi_initialized = 0;
 
 int setup_spi()
 {
+    if(spi_initialized) // if it was already initialized
+        return 0;
+
    if(!wiringPiSetup()) //returns 0 if everything is ok
    {
        pinMode(PWR, OUTPUT);
@@ -25,7 +29,7 @@ int setup_spi()
    else
    {
        //add some debugging here
-       exit(1);
+       return 1;
    }
 }
 
