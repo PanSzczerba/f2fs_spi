@@ -6,6 +6,7 @@ int setup_spi()
 {
    if(!wiringPiSetup()) //returns 0 if everything is ok
    {
+       pinMode(PWR, OUTPUT);
        pinMode(SCLK, OUTPUT); //SCLK
        pinMode(CS, OUTPUT); //CS
        pinMode(MOSI, OUTPUT); //MOSI
@@ -13,6 +14,7 @@ int setup_spi()
        //add some PU-PD resistors control
        pullUpDnControl(MISO, PUD_UP);
 
+       digitalWrite(PWR, HIGH);
        digitalWrite(SCLK, LOW);
        digitalWrite(CS, HIGH); // if it is low slave would start counting clock ticks
        digitalWrite(MOSI, LOW);
@@ -41,7 +43,7 @@ int spi_read_write(unsigned char* buff, size_t buff_size)
             if(digitalRead(MISO)) // read from MISO, set correspoding bit to 0 or 1
                 buff[i] |= shift; 
             else
-                bux[i] &= ~shift;
+                buff[i] &= ~shift;
 
             digitalWrite(SCLK, HIGH); // latch MOSI value
             //maybe some delay?
@@ -49,4 +51,6 @@ int spi_read_write(unsigned char* buff, size_t buff_size)
         }
     }
     digitalWrite(CS, HIGH); // end write sequence
+
+    return 0;
 }

@@ -9,13 +9,14 @@
 #include <stddef.h>
 #include <wiringPi.h>
 
-#define SCLK 1
-#define CS 4
-#define MOSI 5
+#define PWR 7
+#define SCLK 5 
+#define CS 1
+#define MOSI 4
 #define MISO 6
 
 extern int spi_initialized; // to know if pins were initialized - don't change manually
 int setup_spi();
-int spi_read_write(char* buff, size_t buff_size);
+int spi_read_write(unsigned char* buff, size_t buff_size);
 
 #endif
