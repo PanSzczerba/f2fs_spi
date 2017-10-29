@@ -16,14 +16,14 @@ INCLUDE= -I$(SPI_DIR) \
 %.o: %.c
 	$(CC) -c $(CFLAGS) -o $@ $(INCLUDE) $< 
 
-all: $(TEST_DIR)/main \
-	$(SPI_DIR)/libspi.so
+all: $(TEST_DIR)/main #\
+#	$(SPI_DIR)/libspi.so
 
 $(TEST_DIR)/main: $(TEST_DIR)/main.o $(RW_DIR)/rw_block.o $(SPI_DIR)/spi.o
 	$(CC) -o $@ $^ $(LIBRARY)
 
-$(SPI_DIR)/libspi.so: $(SPI_DIR)/spi.o
-	$(CC) -shared -o $@ $<
+#$(SPI_DIR)/libspi.so: $(SPI_DIR)/spi.o
+#	$(CC) -shared -o $@ $<
 
-$(SPI_DIR)/spi.o: $(SPI_DIR)/spi.c $(SPI_DIR)/spi.h
-	$(CC) -c -o $@ $(CFLAGS) $(INCLUDE) -fPIC $<
+#$(SPI_DIR)/spi.o: $(SPI_DIR)/spi.c $(SPI_DIR)/spi.h
+#	$(CC) -c -o $@ $(CFLAGS) $(INCLUDE) -fPIC $<

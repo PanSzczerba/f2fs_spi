@@ -7,6 +7,7 @@
 #endif
 
 #include <stddef.h>
+#include <stdint.h>
 #include <wiringPi.h>
 
 #define PWR 7
@@ -15,7 +16,10 @@
 #define MOSI 4
 #define MISO 6
 
+extern int initialized;
+
 int setup_spi();
-int spi_read_write(unsigned char* buff, size_t buff_size);
+void power_off();
+int spi_read_write(uint8_t* buff, size_t buff_size);
 
 #endif

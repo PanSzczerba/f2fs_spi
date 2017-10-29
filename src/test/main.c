@@ -1,6 +1,6 @@
-#include "rw_block.h"
+#include "spi.h"
 
 int main()
 {
-    sd_init();
+    setup_spi();
 }
