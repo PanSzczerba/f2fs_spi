@@ -17,7 +17,6 @@ INCLUDE= -I$(SPI_DIR) \
 	$(CC) -c $(CFLAGS) -o $@ $(INCLUDE) $< 
 
 all: $(TEST_DIR)/main #\
-#	$(SPI_DIR)/libspi.so
 
 $(TEST_DIR)/main: $(TEST_DIR)/main.o $(RW_DIR)/rw_block.o $(SPI_DIR)/spi.o
 	$(CC) -o $@ $^ $(LIBRARY)

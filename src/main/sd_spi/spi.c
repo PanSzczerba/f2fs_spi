@@ -1,31 +1,8 @@
 #include "spi.h"
 #include <stdlib.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <unistd.h>
 
-#define N_CYCLES_TIMEOUT 100
-
-/********POSSIBLE R1 VALUES*************/
-#define R1_IN_IDLE_STATE (uint8_t)0x1
-#define R1_ILLEGAL_COMMAND (uint8_t)0x4
-/***************************************/
-
-
-/********SD VERSION MACROS**************/
-#define SD_V1X 1 
-#define SD_V2X 2
-#define SD_V2XHCXC 3
-/***************************************/
-
-#define BIN_DEBUG(x)    for(uint8_t shift = 0x80; shift > 0; shift >>= 1) \
-                        { \
-                             if(shift & (x)) \
-                                 printf("1"); \
-                             else \
-                                 printf("0"); \
-                        } \
-                        printf("\n"); 
 
 int spi_initialized = 0;
 static int configured_pins = 0;
@@ -37,6 +14,17 @@ int setup_spi()
         return 0;
 
 
+/*  int state = INITIALIZE_SPI;
+    int inicializing = 1;
+
+    while(inicializing)
+    {
+        switch(state)
+            case INITIALIZE_SPI:
+                
+                break;
+                
+    }*/
 ///////////////////// PIN INICIALIZATION ////////////////////////
 
     if(!wiringPiSetup()) //returns 0 if everything is ok
@@ -98,10 +86,10 @@ int setup_spi()
         power_off();
         return 1;
     }
-
+/*
     printf("CMD0 - R1 response:\n");
     BIN_DEBUG(buffer[0]);
-
+*/
     if(buffer[0] != R1_IN_IDLE_STATE) // response isn't what it was expected (R1 with idle state bit on)
     {
         fprintf(stderr, "Error: not an SD card\n"); 
@@ -139,16 +127,19 @@ int setup_spi()
     if(buffer[0] & R1_ILLEGAL_COMMAND) //if SDv1.x
     {
         sd_version = SD_V1X; // doesn't recognize CMD8 - it's either SD version 1.x or not SD card at all
-
+/*
         printf("\nCMD8 - R1 response:\n");
         BIN_DEBUG(buffer[0]);
+*/
     }
     else // SDv2.x | SDHC/SDXCv2.x (determined in later steps)
     {
         spi_read_write(buffer + 1, 4);
+/*
         printf("\nCMD8 - R7 response:\n");
         for(size_t j = 0; j < 5; j++)
             BIN_DEBUG(buffer[j]);
+*/
     }
 
     buffer[0] = 0xff;
@@ -189,9 +180,11 @@ int setup_spi()
 
     spi_read_write(buffer + 1, 4);
 
+/*
     printf("\nCMD58 - R3 response:\n");
     for(size_t j = 0; j < 5; j++)
         BIN_DEBUG(buffer[j]);
+*/
 
 ////////////// END OF PARSING CMD58 RESPONSE ////////////////////////
     
@@ -222,10 +215,10 @@ int setup_spi()
             power_off();
             return 1;
         }
-
+/*
         printf("\nCMD55 - R1 response:\n");
         BIN_DEBUG(buffer[0]);
-
+*/
         if(buffer[0] & R1_ILLEGAL_COMMAND) //not SD card 
         {
             fprintf(stderr, "Error: not an SD card\n");
@@ -253,10 +246,10 @@ int setup_spi()
             power_off();
             return 1;
         }
-
+/*
         printf("\nACMD41 - R1 response:\n");
         BIN_DEBUG(buffer[0]);
-        
+*/        
     }
 
 ////////////////// END OF SENDING ACMD41 /////////////////////////
@@ -288,11 +281,11 @@ int setup_spi()
         for(size_t i = 1; i < 5; i++) buffer[i] = 0xff;
 
         spi_read_write(buffer + 1, 4);
-
+/*
         printf("\nCMD58 - R3 response:\n");
         for(size_t j = 0; j < 5; j++)
             BIN_DEBUG(buffer[j]);
-
+*/
         if(buffer[4] & (uint8_t)0x2) //check OCR register CCS property
             sd_version = SD_V2XHCXC;
         else
@@ -301,7 +294,6 @@ int setup_spi()
 
 ////////////////////////////////////////////////////////////////////
  
-    power_off();
     return 0;
 }
 
