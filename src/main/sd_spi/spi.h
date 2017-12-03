@@ -17,7 +17,7 @@
 #define MOSI 4
 #define MISO 6
 
-#define N_CYCLES_TIMEOUT 100
+#define N_CYCLES_TIMEOUT 512
 
 /********POSSIBLE R1 VALUES*************/
 #define R1_IN_IDLE_STATE (uint8_t)0x1
