@@ -1,5 +1,5 @@
 #include "spi.h"
-#include "rw_block.h"
+#include "sd.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -11,17 +11,22 @@ void display_buffer(size_t block_address, block512 buff)
         for(size_t j = 0; j < 16; j++)
             printf("%02x ", buff.data[i * 16 + j]);
         printf("\n");
-
     } 
 }
 int main()
 {
+
     setup_spi();
     block512 buff;
+
+    printf("CSD register:\n");
+    for(size_t j = 0; j < 16; j++)
+        printf("%02x ", csd_register[j]);
+    printf("\n\n");
     
     read_single_block(0, &buff);
 
-    printf("Single block read\n\n");
+    printf("Single block read\n");
     display_buffer(0, buff);
     printf("\n");
 

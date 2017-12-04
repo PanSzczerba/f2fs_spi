@@ -1,39 +1,18 @@
-#ifndef SPI_WPI_H
-#define SPI_WPI_H 
+#ifndef SD_SPI_H
+#define SD_SPI_H
 
-//for error return codes in wPi setup function
-#ifndef WIRINGPI_CODES
-#define WIRINGPI_CODES
-#endif
-
-#include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <wiringPi.h>
-
-#define PWR 7
-#define SCLK 5 
-#define CS 1
-#define MOSI 4
-#define MISO 6
-
-#define N_CYCLES_TIMEOUT 512
 
 /********POSSIBLE R1 VALUES*************/
 #define R1_IN_IDLE_STATE (uint8_t)0x1
 #define R1_ILLEGAL_COMMAND (uint8_t)0x4
 /***************************************/
 
-
 /********SD VERSION MACROS**************/
+#define SD_NOT_DETERMINED 0 
 #define SD_V1X 1 
 #define SD_V2X 2
 #define SD_V2XHCXC 3
-/***************************************/
-
-
-/**********POSSIBLE STATES**************/
-#define INITIALIZE_SPI 0
 /***************************************/
 
 #define BIN_DEBUG(x)    for(uint8_t shift = 0x80; shift > 0; shift >>= 1) \
@@ -44,10 +23,22 @@
                                  printf("0"); \
                         } 
 
-extern int initialized;
+extern int spi_initialized;
+extern int sd_version;
+extern uint8_t csd_register[16];
+
+
+typedef struct block512
+{
+    uint8_t data[512];
+} block512;
+
 
 int setup_spi();
 void power_off();
-int spi_read_write(uint8_t* buff, size_t buff_size);
+int read_single_block(uint32_t index, block512*); //block index should be 32-bit unsigned integer
+int write_single_block(uint32_t index, block512); //block index should be 32-bit unsigned integer
+int read_multiple_block(uint32_t index, block512* buff, size_t size);
+int write_multiple_block(uint32_t index, block512* buff, size_t size);
 
 #endif
