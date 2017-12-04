@@ -36,9 +36,13 @@ typedef struct block512
 
 int setup_spi();
 void power_off();
+/*
 int read_single_block(uint32_t index, block512*); //block index should be 32-bit unsigned integer
 int write_single_block(uint32_t index, block512); //block index should be 32-bit unsigned integer
 int read_multiple_block(uint32_t index, block512* buff, size_t size);
 int write_multiple_block(uint32_t index, block512* buff, size_t size);
+*/
+int read_blocks(uint32_t index, block512* buff, size_t size);
+int write_blocks(uint32_t index, block512* buff, size_t size);
 
 #endif

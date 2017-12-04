@@ -24,22 +24,22 @@ int main()
         printf("%02x ", csd_register[j]);
     printf("\n\n");
     
-    read_single_block(0, &buff);
+    read_blocks(0, &buff, 1);
 
     printf("Single block read\n");
     display_buffer(0, buff);
     printf("\n");
 
     memset(buff.data, 0xf2, 512);
-    write_single_block(256000, buff);
-    read_single_block(256000, &buff);
+    write_blocks(256000, &buff, 1);
+    read_blocks(256000, &buff, 1);
 
     printf("Single block write and read\n");
     display_buffer(256000, buff);
     printf("\n");
 
     block512 buff_array[10];
-    read_multiple_block(255488, buff_array, 10);
+    read_blocks(255488, buff_array, 10);
    
     printf("Multiple block read\n");
     for(size_t j = 0; j < 10; j++)
@@ -50,18 +50,17 @@ int main()
 
     for(int i = 0; i < 10; i++)
         memset(buff_array[i].data, 0xa7, 512);
-    write_multiple_block(255488, buff_array, 10);
+    write_blocks(255488, buff_array, 10);
 
     for(int i = 0; i < 10; i++)
         memset(buff_array[i].data, 0x0, 512);
     
-    read_multiple_block(255488, buff_array, 10);
+    write_blocks(255488, buff_array, 10);
     
     printf("Multiple block write and read\n");
     for(size_t j = 0; j < 10; j++)
     {
         display_buffer(255488 + j*512, buff_array[j]);
     }
-
-    power_off();
+    reset_pins();
 }

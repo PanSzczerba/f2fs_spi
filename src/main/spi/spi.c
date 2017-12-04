@@ -6,7 +6,7 @@
 
 
 int configured_pins = 0;
-useconds_t udelay = 0;
+useconds_t udelay = 1;
 
 int configure_pins()
 {
@@ -64,7 +64,7 @@ int spi_read_write(uint8_t* buff, size_t buff_size)
             else
                 buff[i] &= ~shift;
 
-            digitalWrite(SCLK, HIGH); // latch MOSI value
+            digitalWrite(SCLK, HIGH); // latch MOSI value 
 //          usleep(udelay);
             digitalWrite(SCLK, LOW); // shift values in internal register
         }
@@ -72,4 +72,17 @@ int spi_read_write(uint8_t* buff, size_t buff_size)
     digitalWrite(CS, HIGH); // end write sequence
 
     return 0;
+}
+
+void reset_pins() 
+{
+    digitalWrite(PWR, LOW);
+    digitalWrite(SCLK, LOW);
+    digitalWrite(CS, LOW); 
+    digitalWrite(MOSI, LOW);
+
+    pinMode(PWR, INPUT);
+    pinMode(SCLK, INPUT); 
+    pinMode(CS, INPUT); 
+    pinMode(MOSI, INPUT); 
 }

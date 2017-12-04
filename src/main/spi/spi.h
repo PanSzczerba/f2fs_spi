@@ -21,6 +21,7 @@
 extern int configured_pins;
 extern useconds_t udelay;
 int configure_pins();
+void reset_pins();
 int spi_read_write(uint8_t* buff, size_t buff_size);
 
 #endif
