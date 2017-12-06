@@ -18,7 +18,7 @@ INCLUDE= -I$(SPI_DIR) \
 
 all: $(TEST_DIR)/main #\
 
-$(TEST_DIR)/main: $(TEST_DIR)/main.o $(SD_DIR)/sd.o $(SPI_DIR)/spi.o
+$(TEST_DIR)/main: $(TEST_DIR)/main.o $(SD_DIR)/rw.o $(SD_DIR)/init.o $(SPI_DIR)/spi.o
 	$(CC) -o $@ $^ $(LIBRARY)
 
 #$(SPI_DIR)/libspi.so: $(SPI_DIR)/spi.o

@@ -53,7 +53,7 @@ int main()
     write_blocks(255488, buff_array, 10);
 
     for(int i = 0; i < 10; i++)
-        memset(buff_array[i].data, 0x0, 512);
+        memset(buff_array[i].data, 0x01, 512);
     
     write_blocks(255488, buff_array, 10);
     
