@@ -13,6 +13,7 @@ void display_buffer(size_t block_address, block512 buff)
         printf("\n");
     } 
 }
+
 int main()
 {
 
@@ -26,7 +27,7 @@ int main()
     
     read_blocks(0, &buff, 1);
 
-    printf("Single block read\n");
+    printf("Single block read - MBR\n");
     display_buffer(0, buff);
     printf("\n");
 
