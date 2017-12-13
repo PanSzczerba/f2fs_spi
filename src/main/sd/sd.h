@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define SECTOR_SIZE 512
+
 /********POSSIBLE R1 VALUES*************/
 #define R1_IN_IDLE_STATE (uint8_t)0x1
 #define R1_ILLEGAL_COMMAND (uint8_t)0x4

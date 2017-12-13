@@ -1,5 +1,6 @@
 #include "spi.h"
 #include "sd.h"
+#include "f2fs.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -63,5 +64,11 @@ int main()
     {
         display_buffer(255488 + j*512, buff_array[j]);
     }
+
+    struct f2fs_super_block sb;
+    get_super_block(&sb,0); 
+    super_block_display(&sb);
+
+///////////////////CLEANUP///////////
     reset_pins();
 }

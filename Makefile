@@ -8,17 +8,19 @@ endif
 #Dirs
 SPI_DIR=./src/main/spi
 SD_DIR=./src/main/sd
+F2FS_DIR=./src/main/f2fs
 TEST_DIR=./src/test
 
 INCLUDE= -I$(SPI_DIR) \
-		 -I$(SD_DIR)
+		 -I$(SD_DIR) \
+         -I$(F2FS_DIR)
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) -o $@ $(INCLUDE) $< 
 
 all: $(TEST_DIR)/main #\
 
-$(TEST_DIR)/main: $(TEST_DIR)/main.o $(SD_DIR)/rw.o $(SD_DIR)/init.o $(SPI_DIR)/spi.o
+$(TEST_DIR)/main: $(TEST_DIR)/main.o $(SD_DIR)/rw.o $(SD_DIR)/init.o $(SPI_DIR)/spi.o $(F2FS_DIR)/properties.o
 	$(CC) -o $@ $^ $(LIBRARY)
 
 #$(SPI_DIR)/libspi.so: $(SPI_DIR)/spi.o
