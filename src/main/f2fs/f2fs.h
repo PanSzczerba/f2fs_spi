@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#define SEGMENT_SIZE 2*1024*1024
+
 #define MAX_ACTIVE_LOGS	16
 #define MAX_ACTIVE_NODE_LOGS 8
 #define MAX_ACTIVE_DATA_LOGS 8
@@ -69,5 +71,55 @@ struct f2fs_super_block {
 int get_super_block(struct f2fs_super_block*, size_t partition_no);
 void super_block_display(struct f2fs_super_block*);
 
+/*
+ * For checkpoint
+ */
+#define CP_TRIMMED_FLAG		0x00000100
+#define CP_NAT_BITS_FLAG	0x00000080
+#define CP_CRC_RECOVERY_FLAG	0x00000040
+#define CP_FASTBOOT_FLAG	0x00000020
+#define CP_FSCK_FLAG		0x00000010
+#define CP_ERROR_FLAG		0x00000008
+#define CP_COMPACT_SUM_FLAG	0x00000004
+#define CP_ORPHAN_PRESENT_FLAG	0x00000002
+#define CP_UMOUNT_FLAG		0x00000001
+
+#define F2FS_CP_PACKS		2	/* # of checkpoint packs */
+
+struct f2fs_checkpoint {
+	uint64_t checkpoint_ver;		/* checkpoint block version number */
+	uint64_t user_block_count;	/* # of user blocks */
+	uint64_t valid_block_count;	/* # of valid blocks in main area */
+	uint32_t rsvd_segment_count;	/* # of reserved segments for gc */
+	uint32_t overprov_segment_count;	/* # of overprovision segments */
+	uint32_t free_segment_count;	/* # of free segments in main area */
+
+	/* information of current node segments */
+	uint32_t cur_node_segno[MAX_ACTIVE_NODE_LOGS];
+	uint16_t cur_node_blkoff[MAX_ACTIVE_NODE_LOGS];
+
+	/* information of current data segments */
+	uint32_t cur_data_segno[MAX_ACTIVE_DATA_LOGS];
+	uint16_t cur_data_blkoff[MAX_ACTIVE_DATA_LOGS];
+	uint32_t ckpt_flags;		/* Flags : umount and journal_present */
+	uint32_t cp_pack_total_block_count;	/* total # of one cp pack */
+	uint32_t cp_pack_start_sum;	/* start block number of data summary */
+	uint32_t valid_node_count;	/* Total number of valid nodes */
+	uint32_t valid_inode_count;	/* Total number of valid inodes */
+	uint32_t next_free_nid;		/* Next free node number */
+	uint32_t sit_ver_bitmap_bytesize;	/* Default value 64 */
+	uint32_t nat_ver_bitmap_bytesize; /* Default value 256 */
+	uint32_t checksum_offset;		/* checksum offset inside cp block */
+	uint64_t elapsed_time;		/* mounted time */
+
+	/* allocation type of current segment */
+	unsigned char alloc_type[MAX_ACTIVE_LOGS];
+
+	/* SIT and NAT version bitmap */
+	unsigned char sit_nat_version_bitmap[1];
+} __packed;
+
+int get_checkpoint(struct f2fs_checkpoint*, size_t partition_no);
+void checkpoint_display(struct f2fs_checkpoint*);
 
 #endif 

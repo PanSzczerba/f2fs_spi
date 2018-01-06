@@ -17,7 +17,6 @@ void display_buffer(size_t block_address, block512 buff)
 
 int main()
 {
-
     setup_spi();
     block512 buff;
 

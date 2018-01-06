@@ -38,13 +38,40 @@ typedef struct block512
 
 int setup_spi();
 void power_off();
+
 /*
 int read_single_block(uint32_t index, block512*); //block index should be 32-bit unsigned integer
 int write_single_block(uint32_t index, block512); //block index should be 32-bit unsigned integer
 int read_multiple_block(uint32_t index, block512* buff, size_t size);
 int write_multiple_block(uint32_t index, block512* buff, size_t size);
 */
+
 int read_blocks(uint32_t index, block512* buff, size_t size);
 int write_blocks(uint32_t index, block512* buff, size_t size);
+
+
+/////////////////////////////////// mbr ///////////////////////////////////////
+
+#define __packed __attribute__((packed))
+
+struct partition_entry_t
+{
+    uint8_t status;
+    uint8_t first_sector_CHS[3];
+    uint8_t partition_type;
+    uint8_t last_sector_CHS[3];
+    uint32_t first_sector_LBA;
+    uint32_t sector_no;
+} __packed;
+
+
+struct mbr_t
+{
+    uint8_t bootstrap_code_area[446];
+    struct partition_entry_t partition_entry[4];
+    uint16_t boot_signature;
+} __packed;
+
+int read_mbr(struct mbr_t*);
 
 #endif
