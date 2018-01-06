@@ -6,7 +6,6 @@
 
 
 int configured_pins = 0;
-useconds_t udelay = 1;
 
 int configure_pins()
 {

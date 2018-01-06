@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define SECTOR_SIZE 512
+#define BLOCK_SIZE 512
 
 /********POSSIBLE R1 VALUES*************/
 #define R1_IN_IDLE_STATE (uint8_t)0x1
@@ -30,24 +30,24 @@ extern int sd_version;
 extern uint8_t csd_register[16];
 
 
-typedef struct block512
+typedef struct block512_t
 {
     uint8_t data[512];
-} block512;
+} block512_t;
 
 
 int setup_spi();
 void power_off();
 
 /*
-int read_single_block(uint32_t index, block512*); //block index should be 32-bit unsigned integer
-int write_single_block(uint32_t index, block512); //block index should be 32-bit unsigned integer
-int read_multiple_block(uint32_t index, block512* buff, size_t size);
-int write_multiple_block(uint32_t index, block512* buff, size_t size);
+int read_single_block(uint32_t index, block512_t*); //block index should be 32-bit unsigned integer
+int write_single_block(uint32_t index, block512_t); //block index should be 32-bit unsigned integer
+int read_multiple_block(uint32_t index, block512_t* buff, size_t size);
+int write_multiple_block(uint32_t index, block512_t* buff, size_t size);
 */
 
-int read_blocks(uint32_t index, block512* buff, size_t size);
-int write_blocks(uint32_t index, block512* buff, size_t size);
+int read_blocks(uint32_t index, block512_t* buff, size_t size);
+int write_blocks(uint32_t index, block512_t* buff, size_t size);
 
 
 /////////////////////////////////// mbr ///////////////////////////////////////
@@ -73,5 +73,6 @@ struct mbr_t
 } __packed;
 
 int read_mbr(struct mbr_t*);
+void display_mbr(struct mbr_t* mbr);
 
 #endif

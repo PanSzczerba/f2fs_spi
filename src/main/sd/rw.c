@@ -5,7 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 
-int read_blocks(uint32_t index, block512* buff, size_t size) // size - number of blocks to read
+int read_blocks(uint32_t index, block512_t* buff, size_t size) // size - number of blocks to read
 {
    
     if(size < 1)
@@ -111,7 +111,7 @@ int read_blocks(uint32_t index, block512* buff, size_t size) // size - number of
 
         if(response != 0) // response isn't what it was expected (R1 with idle state bit on)
         {
-            fprintf(stderr, "Error: can't read block\n"); 
+            fprintf(stderr, "Error: can't read block - R1 response error: 0x%02x\n", response); 
             return 1;
         }
 
@@ -193,7 +193,7 @@ int read_blocks(uint32_t index, block512* buff, size_t size) // size - number of
     }
 }
 
-int write_blocks(uint32_t index, block512* buffer, size_t size) // size - number of blocks towrite 
+int write_blocks(uint32_t index, block512_t* buffer, size_t size) // size - number of blocks towrite 
 {
     if(size < 1)
     {
@@ -201,8 +201,8 @@ int write_blocks(uint32_t index, block512* buffer, size_t size) // size - number
         return 1;
     }
 
-    block512* buff = (block512*)malloc(sizeof(block512) * size);
-    memcpy(buff, buffer, sizeof(block512) * size);
+    block512_t* buff = (block512_t*)malloc(sizeof(block512_t) * size);
+    memcpy(buff, buffer, sizeof(block512_t) * size);
 
     if(size == 1)
     {

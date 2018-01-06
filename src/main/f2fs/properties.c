@@ -38,9 +38,9 @@ void super_block_display(struct f2fs_super_block* sb)
 }
 
 
-int get_super_block(struct f2fs_super_block* sp ,uint32_t index, uint_8 blocks_no)
+int get_super_block(struct f2fs_super_block* sp ,uint32_t address)
 {
-    read_blocks(index,(block512*)sp, blocks_no);
+    read_blocks(address, (block512_t*)sp, sizeof(struct f2fs_super_block)/BLOCK_SIZE);
     return 0;
 }
 
@@ -52,9 +52,9 @@ void checkpoint_display(struct f2fs_checkpoint* cp)
     printf("+----------------------------------------------+\n");
     printf("| Checkpoint                                   |\n");
     printf("+----------------------------------------------+\n");
-    printf("checkpoint_ver                          [0x%x]\n",cp->checkpoint_ver);
-    printf("user_block_count                        [0x%x]\n",cp->user_block_count);
-    printf("valid_block_count                       [0x%x]\n",cp->valid_block_count);
+    printf("checkpoint_ver                          [0x%llx]\n",cp->checkpoint_ver);
+    printf("user_block_count                        [0x%llx]\n",cp->user_block_count);
+    printf("valid_block_count                       [0x%llx]\n",cp->valid_block_count);
     printf("rsvd_segment_count                      [0x%x]\n",cp->rsvd_segment_count);
     printf("overprov_segment_count                  [0x%x]\n",cp->overprov_segment_count);
     printf("free_segment_count                      [0x%x]\n",cp->free_segment_count);
@@ -92,12 +92,16 @@ void checkpoint_display(struct f2fs_checkpoint* cp)
     printf("sit_ver_bitmap_bytesize                 [0x%x]\n",cp->sit_ver_bitmap_bytesize);
     printf("nat_ver_bitmap_bytesize                 [0x%x]\n",cp->nat_ver_bitmap_bytesize);
     printf("checksum_offset                         [0x%x]\n",cp->checksum_offset);
-    printf("elapsed_time                            [0x%x]\n",cp->elapsed_time);
+    printf("elapsed_time                            [0x%llx]\n",cp->elapsed_time);
     printf("sit_nat_version_bitmap[0]               [0x%x]\n",cp->sit_nat_version_bitmap[0]);
 }
 
-int get_checkpoint(struct f2fs_checkpoint* cp ,uint32_t index, uint_8 blocks_no)
+int get_checkpoint(struct f2fs_checkpoint* cp, uint32_t address)
 {
-    read_blocks(index,(block512*)cp, blocks_no);
+    block512_t blk;
+    read_blocks(address, &blk, 1);
+    
+    void* vp = (void*)&blk;
+    *cp = *((struct f2fs_checkpoint*)vp);
     return 0;
 }

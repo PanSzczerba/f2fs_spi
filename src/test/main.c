@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 
-void display_buffer(size_t block_address, block512 buff)
+void display_buffer(size_t block_address, block512_t buff)
 {
     for(size_t i = 0; i < 32; i++)
     {
@@ -18,19 +18,21 @@ void display_buffer(size_t block_address, block512 buff)
 int main()
 {
     setup_spi();
-    block512 buff;
 
     printf("CSD register:\n");
     for(size_t j = 0; j < 16; j++)
         printf("%02x ", csd_register[j]);
     printf("\n\n");
     
-    read_blocks(0, &buff, 1);
+    struct mbr_t mbr;
+    read_mbr(&mbr);
 
-    printf("Single block read - MBR\n");
-    display_buffer(0, buff);
+    display_mbr(&mbr);
+    //display_buffer(0, (block512_t)mbr);
     printf("\n");
 
+/*
+    block512_t buff;
     memset(buff.data, 0xf2, 512);
     write_blocks(256000, &buff, 1);
     read_blocks(256000, &buff, 1);
@@ -39,7 +41,7 @@ int main()
     display_buffer(256000, buff);
     printf("\n");
 
-    block512 buff_array[10];
+    block512_t buff_array[10];
     read_blocks(255488, buff_array, 10);
    
     printf("Multiple block read\n");
@@ -63,10 +65,25 @@ int main()
     {
         display_buffer(255488 + j*512, buff_array[j]);
     }
-
+*/
     struct f2fs_super_block sb;
-    get_super_block(&sb,0); 
+    get_super_block(&sb, mbr.partition_entry[0].first_sector_LBA*BLOCK_SIZE + 2*BLOCK_SIZE); 
     super_block_display(&sb);
+
+    struct f2fs_checkpoint chkp;
+    get_checkpoint(&chkp, mbr.partition_entry[0].first_sector_LBA*BLOCK_SIZE + sb.cp_blkaddr*F2FS_BLOCK_SIZE);
+    checkpoint_display(&chkp);
+    printf("\n");
+
+    block512_t buff_array[64];
+    read_blocks(mbr.partition_entry[0].first_sector_LBA*BLOCK_SIZE + sb.nat_blkaddr*F2FS_BLOCK_SIZE, buff_array, 64);
+   
+    for(size_t j = 0; j < 64; j++)
+    {
+       display_buffer(mbr.partition_entry[0].first_sector_LBA*BLOCK_SIZE + sb.nat_blkaddr*F2FS_BLOCK_SIZE + j*512, buff_array[j]);
+    }
+
+
 
 ///////////////////CLEANUP///////////
     reset_pins();

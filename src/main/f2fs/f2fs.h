@@ -4,7 +4,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#define SEGMENT_SIZE 2*1024*1024
+#define F2FS_SEGMENT_SIZE 0x200000
+#define F2FS_BLOCK_SIZE 0x1000
 
 #define MAX_ACTIVE_LOGS	16
 #define MAX_ACTIVE_NODE_LOGS 8
@@ -68,7 +69,7 @@ struct f2fs_super_block {
 	uint8_t reserved[327];		/* valid reserved region */
 } __packed;
 
-int get_super_block(struct f2fs_super_block*, size_t partition_no);
+int get_super_block(struct f2fs_super_block* sp, uint32_t address);
 void super_block_display(struct f2fs_super_block*);
 
 /*
@@ -119,7 +120,59 @@ struct f2fs_checkpoint {
 	unsigned char sit_nat_version_bitmap[1];
 } __packed;
 
-int get_checkpoint(struct f2fs_checkpoint*, size_t partition_no);
+#define F2FS_NAME_LEN       255
+#define DEF_ADDRS_PER_INODE 923 /* Address Pointers in an Inode */
+#define DEF_NIDS_PER_INODE  5   /* Node IDs in an Inode */
+
+
+struct f2fs_inode {
+	uint16_t i_mode;			/* file mode */
+	uint8_t i_advise;			/* file hints */
+	uint8_t i_inline;			/* file inline flags */
+	uint32_t i_uid;			/* user ID */
+	uint32_t i_gid;			/* group ID */
+	uint32_t i_links;			/* links count */
+	uint64_t i_size;			/* file size in bytes */
+	uint64_t i_blocks;		/* file size in blocks */
+	uint64_t i_atime;			/* access time */
+	uint64_t i_ctime;			/* change time */
+	uint64_t i_mtime;			/* modification time */
+	uint32_t i_atime_nsec;		/* access time in nano scale */
+	uint32_t i_ctime_nsec;		/* change time in nano scale */
+	uint32_t i_mtime_nsec;		/* modification time in nano scale */
+	uint32_t i_generation;		/* file version (for NFS) */
+	uint32_t i_current_depth;		/* only for directory depth */
+	uint32_t i_xattr_nid;		/* nid to save xattr */
+	uint32_t i_flags;			/* file attributes */
+	uint32_t i_pino;			/* parent inode number */
+	uint32_t i_namelen;		/* file name length */
+	uint8_t i_name[F2FS_NAME_LEN];	/* file name for SPOR */
+	uint8_t i_dir_level;		/* dentry_level for large dir */
+
+	struct f2fs_extent i_ext;	/* caching a largest extent */
+
+	union {
+		struct {
+			uint16_t i_extra_isize;	/* extra inode attribute size */
+			uint16_t i_padding;	/* padding */
+			uint32_t i_projid;	/* project id */
+			uint32_t i_inode_checksum;/* inode meta checksum */
+			uint32_t i_extra_end[0];	/* for attribute size calculation */
+		};
+		uint32_t i_addr[DEF_ADDRS_PER_INODE];	/* Pointers to data blocks */
+	};
+	uint32_t i_nid[DEF_NIDS_PER_INODE];	/* direct(2), indirect(2),
+						double_indirect(1) node id */
+} __packed;
+
+struct f2fs_nat_entry {
+	uint8_t version;		/* latest version of cached nat entry */
+	uint32_t ino;		/* inode number */
+	uint32_t block_addr;	/* block address */
+} __packed;
+
+
+int get_checkpoint(struct f2fs_checkpoint* cp, uint32_t address);
 void checkpoint_display(struct f2fs_checkpoint*);
 
 #endif 

@@ -245,11 +245,11 @@ int setup_spi()
 
         spi_read_write(buffer + 1, 4);
 /*
-        printf("\nCMD58 - R3 response:\n");
+        printf("\nR3 response:\n");
         for(size_t j = 0; j < 5; j++)
             BIN_DEBUG(buffer[j]);
 */
-        if(buffer[4] & (uint8_t)0x2) //check OCR register CCS property
+        if(buffer[1] & (uint8_t)0x40) //check OCR register CCS property
             sd_version = SD_V2XHCXC;
         else
             sd_version = SD_V2X;
