@@ -19,6 +19,8 @@
 
 #define __packed __attribute__((packed))
 
+////////////////////////////////////////////////////////////////////
+
 /*
  * For superblock
  */
@@ -70,7 +72,9 @@ struct f2fs_super_block {
 } __packed;
 
 int get_super_block(struct f2fs_super_block* sp, uint32_t address);
-void super_block_display(struct f2fs_super_block*);
+void display_super_block(struct f2fs_super_block*);
+
+////////////////////////////////////////////////////////////////////
 
 /*
  * For checkpoint
@@ -120,59 +124,143 @@ struct f2fs_checkpoint {
 	unsigned char sit_nat_version_bitmap[1];
 } __packed;
 
-#define F2FS_NAME_LEN       255
-#define DEF_ADDRS_PER_INODE 923 /* Address Pointers in an Inode */
-#define DEF_NIDS_PER_INODE  5   /* Node IDs in an Inode */
+int get_checkpoint(struct f2fs_checkpoint* cp, uint32_t address);
+void dislpay_checkpoint(struct f2fs_checkpoint*);
 
+////////////////////////////////////////////////////////////////////
+/*
+ * For NODE structure
+ */
+struct f2fs_extent {
+    uint32_t fofs;		/* start file offset of the extent */
+    uint32_t blk;		/* start block address of the extent */
+    uint32_t len;		/* length of the extent */
+} __packed;
+
+#define F2FS_NAME_LEN		255
+#define F2FS_INLINE_XATTR_ADDRS	50	/* 200 bytes for inline xattrs */
+#define DEF_ADDRS_PER_INODE	923	/* Address Pointers in an Inode */
+#define CUR_ADDRS_PER_INODE(inode)	(DEF_ADDRS_PER_INODE - \
+					get_extra_isize(inode))
+#define DEF_NIDS_PER_INODE	5	/* Node IDs in an Inode */
+#define ADDRS_PER_INODE(inode)	addrs_per_inode(inode)
+#define ADDRS_PER_BLOCK		1018	/* Address Pointers in a Direct Block */
+#define NIDS_PER_BLOCK		1018	/* Node IDs in an Indirect Block */
+
+#define ADDRS_PER_PAGE(page, inode)	\
+	(IS_INODE(page) ? ADDRS_PER_INODE(inode) : ADDRS_PER_BLOCK)
+
+#define	NODE_DIR1_BLOCK		(DEF_ADDRS_PER_INODE + 1)
+#define	NODE_DIR2_BLOCK		(DEF_ADDRS_PER_INODE + 2)
+#define	NODE_IND1_BLOCK		(DEF_ADDRS_PER_INODE + 3)
+#define	NODE_IND2_BLOCK		(DEF_ADDRS_PER_INODE + 4)
+#define	NODE_DIND_BLOCK		(DEF_ADDRS_PER_INODE + 5)
+
+#define F2FS_INLINE_XATTR	0x01	/* file inline xattr flag */
+#define F2FS_INLINE_DATA	0x02	/* file inline data flag */
+#define F2FS_INLINE_DENTRY	0x04	/* file inline dentry flag */
+#define F2FS_DATA_EXIST		0x08	/* file inline data exist flag */
+#define F2FS_INLINE_DOTS	0x10	/* file having implicit dot dentries */
+#define F2FS_EXTRA_ATTR		0x20	/* file having extra attribute */
 
 struct f2fs_inode {
-	uint16_t i_mode;			/* file mode */
-	uint8_t i_advise;			/* file hints */
-	uint8_t i_inline;			/* file inline flags */
-	uint32_t i_uid;			/* user ID */
-	uint32_t i_gid;			/* group ID */
-	uint32_t i_links;			/* links count */
-	uint64_t i_size;			/* file size in bytes */
-	uint64_t i_blocks;		/* file size in blocks */
-	uint64_t i_atime;			/* access time */
-	uint64_t i_ctime;			/* change time */
-	uint64_t i_mtime;			/* modification time */
-	uint32_t i_atime_nsec;		/* access time in nano scale */
-	uint32_t i_ctime_nsec;		/* change time in nano scale */
-	uint32_t i_mtime_nsec;		/* modification time in nano scale */
-	uint32_t i_generation;		/* file version (for NFS) */
-	uint32_t i_current_depth;		/* only for directory depth */
-	uint32_t i_xattr_nid;		/* nid to save xattr */
-	uint32_t i_flags;			/* file attributes */
-	uint32_t i_pino;			/* parent inode number */
-	uint32_t i_namelen;		/* file name length */
-	uint8_t i_name[F2FS_NAME_LEN];	/* file name for SPOR */
-	uint8_t i_dir_level;		/* dentry_level for large dir */
+    uint16_t i_mode;			/* file mode */
+    uint8_t _advise;			/* file hints */
+    uint8_t i_inline;			/* file inline flags */
+    uint32_t i_uid;			/* user ID */
+    uint32_t i_gid;			/* group ID */
+    uint32_t i_links;			/* links count */
+    uint64_t i_size;			/* file size in bytes */
+    uint64_t i_blocks;		/* file size in blocks */
+    uint64_t i_atime;			/* access time */
+    uint64_t i_ctime;			/* change time */
+    uint64_t i_mtime;			/* modification time */
+    uint32_t i_atime_nsec;		/* access time in nano scale */
+    uint32_t i_ctime_nsec;		/* change time in nano scale */
+    uint32_t i_mtime_nsec;		/* modification time in nano scale */
+    uint32_t i_generation;		/* file version (for NFS) */
+    uint32_t i_current_depth;		/* only for directory depth */
+    uint32_t i_xattr_nid;		/* nid to save xattr */
+    uint32_t i_flags;			/* file attributes */
+    uint32_t i_pino;			/* parent inode number */
+    uint32_t i_namelen;		/* file name length */
+    uint8_t i_name[F2FS_NAME_LEN];	/* file name for SPOR */
+    uint8_t i_dir_level;		/* dentry_level for large dir */
 
-	struct f2fs_extent i_ext;	/* caching a largest extent */
+    struct f2fs_extent i_ext;	/* caching a largest extent */
 
-	union {
-		struct {
-			uint16_t i_extra_isize;	/* extra inode attribute size */
-			uint16_t i_padding;	/* padding */
-			uint32_t i_projid;	/* project id */
-			uint32_t i_inode_checksum;/* inode meta checksum */
-			uint32_t i_extra_end[0];	/* for attribute size calculation */
-		};
-		uint32_t i_addr[DEF_ADDRS_PER_INODE];	/* Pointers to data blocks */
-	};
-	uint32_t i_nid[DEF_NIDS_PER_INODE];	/* direct(2), indirect(2),
+    union {
+        struct {
+            uint16_t i_extra_isize;	/* extra inode attribute size */
+            uint16_t i_padding;	/* padding */
+            uint32_t i_projid;	/* project id */
+            uint32_t i_inode_checksum;/* inode meta checksum */
+            uint32_t i_extra_end[0];	/* for attribute size calculation */
+        };
+        uint32_t i_addr[DEF_ADDRS_PER_INODE];	/* Pointers to data blocks */
+    };
+    uint32_t i_nid[DEF_NIDS_PER_INODE];	/* direct(2), indirect(2),
 						double_indirect(1) node id */
 } __packed;
 
-struct f2fs_nat_entry {
-	uint8_t version;		/* latest version of cached nat entry */
-	uint32_t ino;		/* inode number */
-	uint32_t block_addr;	/* block address */
+struct direct_node {
+    uint32_t addr[ADDRS_PER_BLOCK];	/* array of data block address */
 } __packed;
 
+struct indirect_node {
+    uint32_t nid[NIDS_PER_BLOCK];	/* array of data block address */
+} __packed;
 
-int get_checkpoint(struct f2fs_checkpoint* cp, uint32_t address);
-void checkpoint_display(struct f2fs_checkpoint*);
+enum {
+    COLD_BIT_SHIFT = 0,
+    FSYNC_BIT_SHIFT,
+    DENT_BIT_SHIFT,
+    OFFSET_BIT_SHIFT
+};
+
+#define OFFSET_BIT_MASK		(0x07)	/* (0x01 << OFFSET_BIT_SHIFT) - 1 */
+
+struct node_footer {
+    uint32_t nid;		/* node id */
+    uint32_t ino;		/* inode nunmber */
+    uint32_t flag;		/* include cold/fsync/dentry marks and offset */
+    uint64_t cp_ver;		/* checkpoint version */
+    uint32_t next_blkaddr;	/* next node page block address */
+} __packed;
+
+struct f2fs_node {
+    /* can be one of three types: inode, direct, and indirect types */
+    union {
+        struct f2fs_inode i;
+        struct direct_node dn;
+        struct indirect_node in;
+    };
+    struct node_footer footer;
+} __packed;
+
+int get_inode(struct f2fs_inode* in, uint32_t address);
+void dislpay_inode(struct f2fs_inode*);
+
+
+////////////////////////////////////////////////////////////////////
+
+/*
+ * For NAT entries
+ */
+#define NAT_ENTRY_PER_BLOCK (PAGE_SIZE / sizeof(struct f2fs_nat_entry))
+#define NAT_ENTRY_BITMAP_SIZE	((NAT_ENTRY_PER_BLOCK + 7) / 8)
+
+struct f2fs_nat_entry {
+    uint8_t version;		/* latest version of cached nat entry */
+    unt32_t ino;		/* inode number */
+    uint32_t block_addr;	/* block address */
+} __packed;
+
+struct f2fs_nat_block {
+    struct f2fs_nat_entry entries[NAT_ENTRY_PER_BLOCK];
+} __packed;
+
+int get_nat_entry(struct f2fs_nat_entry* ne, uint32_t address);
+void display_nat_entry(struct f2fs_nat_entry*);
 
 #endif 
