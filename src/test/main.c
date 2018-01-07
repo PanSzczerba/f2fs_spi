@@ -81,6 +81,11 @@ int main()
     for(size_t j = 0; j < 64; j++)
        display_buffer(mbr.partition_entry[0].first_sector_LBA*BLOCK_SIZE + md.sb.nat_blkaddr*F2FS_BLOCK_SIZE + j*512, buff_array[j]);
 
+    struct f2fs_nat_entry nat_entries[4];
+    get_nat_entries(&md, nat_entries, 0, 4);
+    printf("\n%x - %x\n", nat_entries[3].ino, nat_entries[3].block_addr);
+
+
 ///////////////////CLEANUP///////////
     reset_pins();
 }
