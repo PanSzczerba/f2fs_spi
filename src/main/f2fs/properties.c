@@ -1,6 +1,8 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include "f2fs.h"
 #include "sd.h" 
-#include <stdio.h>
 
 void super_block_display(struct f2fs_super_block* sb) 
 {
@@ -38,9 +40,10 @@ void super_block_display(struct f2fs_super_block* sb)
 }
 
 
-int get_super_block(struct f2fs_super_block* sp ,uint32_t address)
+int get_super_block(struct f2fs_meta_data* md)
 {
-    read_blocks(address, (block512_t*)sp, sizeof(struct f2fs_super_block)/BLOCK_SIZE);
+    size_t address = (md->partition_block_address + 2)*BLOCK_SIZE;
+    read_blocks(address, (block512_t*)&md->sb, sizeof(struct f2fs_super_block)/BLOCK_SIZE);
     return 0;
 }
 
@@ -96,12 +99,33 @@ void checkpoint_display(struct f2fs_checkpoint* cp)
     printf("sit_nat_version_bitmap[0]               [0x%x]\n",cp->sit_nat_version_bitmap[0]);
 }
 
-int get_checkpoint(struct f2fs_checkpoint* cp, uint32_t address)
+int get_checkpoint(struct f2fs_meta_data* md)
 {
     block512_t blk;
-    read_blocks(address, &blk, 1);
+    read_blocks(md->partition_block_address*BLOCK_SIZE + md->sb.cp_blkaddr*F2FS_BLOCK_SIZE, &blk, 1);
     
     void* vp = (void*)&blk;
-    *cp = *((struct f2fs_checkpoint*)vp);
+    md->chkp = *((struct f2fs_checkpoint*)vp);
+    return 0;
+}
+
+int get_nat_entries(struct f2fs_meta_data* md, struct f2fs_nat_entry* nat_entries, size_t first_nat_entry_no, size_t nat_entry_count)
+{
+
+    size_t block_count;
+    if(sizeof(block512_t)%(sizeof(struct f2fs_nat_entry)*nat_entry_count) == 0)
+        block_count = sizeof(block512_t)/(sizeof(struct f2fs_nat_entry)*nat_entry_count); 
+    else
+        block_count = sizeof(block512_t)/(sizeof(struct f2fs_nat_entry)*nat_entry_count) + 1;
+
+    block512_t* blkp;
+    blkp = (block512_t*)malloc(sizeof(struct block512_t)*block_count);
+
+    size_t address = md->partition_block_address*BLOCK_SIZE + md->sb.nat_blkaddr*F2FS_BLOCK_SIZE + first_nat_entry_no*sizeof(struct f2fs_nat_entry);
+    read_blocks(address, blkp, block_count);
+
+    memcpy((void*)nat_entries, (void*)blkp, nat_entry_count*sizeof(struct f2fs_nat_entry));
+
+    free(blkp);
     return 0;
 }

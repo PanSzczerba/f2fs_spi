@@ -66,24 +66,20 @@ int main()
         display_buffer(255488 + j*512, buff_array[j]);
     }
 */
-    struct f2fs_super_block sb;
-    get_super_block(&sb, mbr.partition_entry[0].first_sector_LBA*BLOCK_SIZE + 2*BLOCK_SIZE); 
-    super_block_display(&sb);
+    struct f2fs_meta_data md;
+    md.partition_block_address = mbr.partition_entry[0].first_sector_LBA;
+    get_super_block(&md); 
+    super_block_display(&(md.sb));
 
-    struct f2fs_checkpoint chkp;
-    get_checkpoint(&chkp, mbr.partition_entry[0].first_sector_LBA*BLOCK_SIZE + sb.cp_blkaddr*F2FS_BLOCK_SIZE);
-    checkpoint_display(&chkp);
+    get_checkpoint(&md);
+    checkpoint_display(&(md.chkp));
     printf("\n");
 
     block512_t buff_array[64];
-    read_blocks(mbr.partition_entry[0].first_sector_LBA*BLOCK_SIZE + sb.nat_blkaddr*F2FS_BLOCK_SIZE, buff_array, 64);
+    read_blocks(mbr.partition_entry[0].first_sector_LBA*BLOCK_SIZE + md.sb.nat_blkaddr*F2FS_BLOCK_SIZE, buff_array, 64);
    
     for(size_t j = 0; j < 64; j++)
-    {
-       display_buffer(mbr.partition_entry[0].first_sector_LBA*BLOCK_SIZE + sb.nat_blkaddr*F2FS_BLOCK_SIZE + j*512, buff_array[j]);
-    }
-
-
+       display_buffer(mbr.partition_entry[0].first_sector_LBA*BLOCK_SIZE + md.sb.nat_blkaddr*F2FS_BLOCK_SIZE + j*512, buff_array[j]);
 
 ///////////////////CLEANUP///////////
     reset_pins();
