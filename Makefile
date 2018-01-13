@@ -20,7 +20,7 @@ INCLUDE= -I$(SPI_DIR) \
 
 all: $(TEST_DIR)/main #\
 
-$(TEST_DIR)/main: $(TEST_DIR)/main.o $(SD_DIR)/rw.o $(SD_DIR)/mbr.o $(SD_DIR)/init.o $(SPI_DIR)/spi.o $(F2FS_DIR)/properties.o
+$(TEST_DIR)/main: $(TEST_DIR)/main.o $(SD_DIR)/rw.o $(SD_DIR)/mbr.o $(SD_DIR)/init.o $(SPI_DIR)/spi.o $(F2FS_DIR)/superblock.o $(F2FS_DIR)/checkpoint.o $(F2FS_DIR)/natentry.o $(F2FS_DIR)/inode.o
 	$(CC) -o $@ $^ $(LIBRARY)
 
 #$(SPI_DIR)/libspi.so: $(SPI_DIR)/spi.o

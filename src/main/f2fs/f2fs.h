@@ -24,6 +24,9 @@
 /*
  * For superblock
  */
+#define PAGE_SIZE 4096
+
+
 struct f2fs_device {
 	uint8_t path[MAX_PATH_LEN];
 	uint32_t total_segments;
@@ -232,8 +235,6 @@ struct f2fs_node {
     struct node_footer footer;
 } __packed;
 
-int get_inode(struct f2fs_inode* in, uint32_t address);
-void dislpay_inode(struct f2fs_inode*);
 
 
 ////////////////////////////////////////////////////////////////////
@@ -246,27 +247,124 @@ void dislpay_inode(struct f2fs_inode*);
 
 struct f2fs_nat_entry {
     uint8_t version;		/* latest version of cached nat entry */
-    unt32_t ino;		/* inode number */
+    uint32_t ino;		/* inode number */
     uint32_t block_addr;	/* block address */
 } __packed;
+
 
 struct f2fs_nat_block {
     struct f2fs_nat_entry entries[NAT_ENTRY_PER_BLOCK];
 } __packed;
+
+#define MAX_JOURNAL_NAT_ENTRIES_NUMBER 38
+struct f2fs_chkp_journal_nat_entry
+{
+    uint32_t nat_entry_no;
+    struct f2fs_nat_entry entry;
+} __packed;
+
+struct f2fs_chkp_nat_journal
+{
+    uint16_t entries_no;
+    struct f2fs_chkp_journal_nat_entry entries[MAX_JOURNAL_NAT_ENTRIES_NUMBER];
+} __packed;
+
+/*
+ * For directory operations
+ */
+#define F2FS_DOT_HASH		0
+#define F2FS_DDOT_HASH		F2FS_DOT_HASH
+#define F2FS_MAX_HASH		(~((0x3ULL) << 62))
+#define F2FS_HASH_COL_BIT	((0x1ULL) << 63)
+
+typedef uint32_t	f2fs_hash_t;
+
+/* One directory entry slot covers 8bytes-long file name */
+#define F2FS_SLOT_LEN		8
+#define F2FS_SLOT_LEN_BITS	3
+
+#define GET_DENTRY_SLOTS(x) (((x) + F2FS_SLOT_LEN - 1) >> F2FS_SLOT_LEN_BITS)
+
+/* MAX level for dir lookup */
+#define MAX_DIR_HASH_DEPTH	63
+
+/* MAX buckets in one level of dir */
+#define MAX_DIR_BUCKETS		(1 << ((MAX_DIR_HASH_DEPTH / 2) - 1))
+
+/*
+ * space utilization of regular dentry and inline dentry (w/o extra reservation)
+ *		regular dentry			inline dentry
+ * bitmap	1 * 27 = 27			1 * 23 = 23
+ * reserved	1 * 3 = 3			1 * 7 = 7
+ * dentry	11 * 214 = 2354			11 * 182 = 2002
+ * filename	8 * 214 = 1712			8 * 182 = 1456
+ * total	4096				3488
+ *
+ * Note: there are more reserved space in inline dentry than in regular
+ * dentry, when converting inline dentry we should handle this carefully.
+ */
+#define BITS_PER_BYTE 8
+#define NR_DENTRY_IN_BLOCK	214	/* the number of dentry in a block */
+#define SIZE_OF_DIR_ENTRY	11	/* by byte */
+#define SIZE_OF_DENTRY_BITMAP	((NR_DENTRY_IN_BLOCK + BITS_PER_BYTE - 1) / \
+					BITS_PER_BYTE)
+#define SIZE_OF_RESERVED	(PAGE_SIZE - ((SIZE_OF_DIR_ENTRY + \
+				F2FS_SLOT_LEN) * \
+				NR_DENTRY_IN_BLOCK + SIZE_OF_DENTRY_BITMAP))
+
+/* One directory entry slot representing F2FS_SLOT_LEN-sized file name */
+struct f2fs_dir_entry {
+	uint32_t hash_code;	/* hash code of file name */
+	uint32_t ino;		/* inode number */
+	uint16_t name_len;	/* lengh of file name */
+	uint8_t file_type;		/* file type */
+} __packed;
+
+/* 4KB-sized directory entry block */
+struct f2fs_dentry_block {
+	/* validity bitmap for directory entries in each block */
+	uint8_t dentry_bitmap[SIZE_OF_DENTRY_BITMAP];
+	uint8_t reserved[SIZE_OF_RESERVED];
+	struct f2fs_dir_entry dentry[NR_DENTRY_IN_BLOCK];
+	uint8_t filename[NR_DENTRY_IN_BLOCK][F2FS_SLOT_LEN];
+} __packed;
+
+enum {
+    F2FS_FT_UNKNOWN,
+    F2FS_FT_REG_FILE,
+    F2FS_FT_DIR,
+    F2FS_FT_CHRDEV,
+    F2FS_FT_BLKDEV,
+    F2FS_FT_FIFO,
+    F2FS_FT_SOCK,
+    F2FS_FT_SYMLINK,
+    F2FS_FT_MAX
+};
 
 struct f2fs_meta_data
 {
     uint32_t partition_block_address;
     struct f2fs_super_block sb;
     struct f2fs_checkpoint chkp;
+    struct f2fs_chkp_nat_journal chkp_nat_journal;
+    uint16_t nat_block_no;
+    struct f2fs_nat_block nat_blk;
 } __packed;
 
 int get_super_block(struct f2fs_meta_data* md);
-void super_block_display(struct f2fs_super_block*);
+void display_super_block(struct f2fs_super_block*);
+
 int get_checkpoint(struct f2fs_meta_data* md);
-void checkpoint_display(struct f2fs_checkpoint*);
-int get_nat_entries(struct f2fs_meta_data* md, struct f2fs_nat_entry* nat_entries, size_t first_nat_entry_no, size_t nat_entry_count);
-int get_nat_entry(struct f2fs_nat_entry* ne, uint32_t address);
+void display_checkpoint(struct f2fs_checkpoint*);
+
+//int get_nat_entries(struct f2fs_meta_data* md, struct f2fs_nat_entry* nat_entries, size_t first_nat_entry_no, size_t nat_entry_count);
+int get_nat_block(struct f2fs_meta_data* md, size_t block_no);
 void display_nat_entry(struct f2fs_nat_entry*);
+
+int get_inode(struct f2fs_meta_data* md, struct f2fs_inode* inode, size_t inode_no);
+void display_inode(struct f2fs_inode* in);
+
+int init_meta_data(struct f2fs_meta_data* md);
+
 
 #endif 

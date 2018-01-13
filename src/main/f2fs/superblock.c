@@ -37,8 +37,9 @@ void display_super_block(struct f2fs_super_block* sb)
     printf("cp_payload                              [0x%x]\n",sb->cp_payload);
 }
 
-int get_super_block(struct f2fs_super_block* sp ,uint32_t address)
+int get_super_block(struct f2fs_meta_data* md)
 {
-    read_blocks(address, (block512_t*)sp, sizeof(struct f2fs_super_block)/BLOCK_SIZE);
+    size_t address = (md->partition_block_address + 2)*BLOCK_SIZE;
+    read_blocks(address, (block512_t*)&(md->sb), sizeof(struct f2fs_super_block)/BLOCK_SIZE);
     return 0;
 }
